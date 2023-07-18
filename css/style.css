@@ -33,6 +33,15 @@ textarea {
     resize: none;
 }
 
+.row>* {
+    margin-top: none !important;
+}
+
+button {
+    display: block;
+    width: 100px !important;
+    margin: 20px auto;
+}
 
 ::-webkit-scrollbar {
     width: 10px;

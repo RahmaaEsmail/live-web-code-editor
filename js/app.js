@@ -1,90 +1,76 @@
-document.getElementById("htmlCode").value = "<div>\n\n</div>";
-document.getElementById("cssCode").value = "<style>\n\n</style>";
-document.getElementById("jsCode").value = "<script>\n\n</script>";
-let list = [];
+const textareaHtmlCode = document.getElementById("htmlCode");
+const textareaCssCode = document.getElementById("cssCode");
+const textareaJsCode = document.getElementById("jsCode");
+
+const validateCode = (code) => {
+    try {
+        eval(code)
+    }
+    catch(err) {
+        return {
+            success : false,
+            err
+        }
+    }
+
+    return {
+        success : true
+    }
+}
+
+const showPreview = ()=>{
+    const frame = document.getElementById("preview-window").contentWindow.document;
+    const jsValidation = validateCode(textareaJsCode.value);
+    if(!jsValidation.success)
+      alert('Error in JavaScript code.' + jsValidation.err)
+
+    frame.open();
+    frame.write(`
+    ${textareaHtmlCode.value}
+    <style>${textareaCssCode.value}</style>
+    <script>${textareaJsCode.value}</script>
+    `)
+    frame.close()
+}
+
+const storeDataToStorage = ()=>{
+    localStorage.setItem("Data",JSON.stringify({
+        html : textareaHtmlCode.value,
+        css : textareaCssCode.value,
+        js : textareaJsCode.value
+    }))
+}
+
+const getDataFromStorage = ()=> {
+    if(localStorage.getItem('Data'))
+      return JSON.parse(localStorage.getItem("Data"))
+    return ({
+        html:"",
+        css:"",
+        js:""
+    })
+}
+
+const displayData = ({html,css,js})=> {
+    textareaHtmlCode.value = html;
+    textareaCssCode.value = css;
+    textareaJsCode.value = js
+}
+
+const initTxtArea = ()=> {
+    document.querySelectorAll("textarea").forEach(text => {
+        text.addEventListener("change", () => {
+            showPreview()
+            storeDataToStorage()
+        })
+    })
+}
 
 
-const init = () => {
+const init = ()=> {
     const data = getDataFromStorage()
-    displayData(data);
+    displayData(data)
+    showPreview()
+    initTxtArea()
 }
 init()
-
-function showPreview() {
-    
-    var htmlCode = document.getElementById("htmlCode").value;
-    var cssCode = "" + document.getElementById("cssCode").value + "";
-    var jsCode = "" + document.getElementById("jsCode").value + "";
-
-    var frame = document.getElementById("preview-window").contentWindow.document;
-    frame.open();
-    frame.write(htmlCode + cssCode + jsCode);
-    frame.close();
-}
-
-document.querySelectorAll("textarea").forEach(ele => {
-    ele.addEventListener("change", () => {
-        addData(ele.id)
-    })
-})
-
-const addData = (item) => {
-    const ele = document.querySelector(`#${item}`).value
-    const obj = {
-        [item]: ele || ''
-    }
-    list.push(obj)
-    storeDataToStorage(list)
-}
-
-const storeDataToStorage = (list) => {
-    localStorage.setItem("Data", JSON.stringify(list))
-}
-
-function getDataFromStorage() {
-    if (localStorage.getItem("Data")) {
-        list = JSON.parse(localStorage.getItem("Data"))
-        return list
-    }
-    return []
-}
-
-function displayData(data) {
-    data.forEach(ele => {
-        if (ele) {
-            Object.keys(ele).forEach(item => {
-                document.querySelector(`#${item}`).value = ele[item]
-                showPreview()
-            })
-        }
-    })
-}
-
-
-
-function show(x) {
-    document.getElementById("html").style.display = "none";
-    document.getElementById("css").style.display = "none";
-    document.getElementById("js").style.display = "none";
-    document.getElementById("result").style.display = "none";
-    document.getElementById(x).style.display = "block";
-}
-
-function show_all() {
-    if (window.innerWidth >= 992) {
-        document.getElementById("html").style.display = "block";
-        document.getElementById("css").style.display = "block";
-        document.getElementById("js").style.display = "block";
-        document.getElementById("result").style.display = "block";
-    }
-    if (window.innerWidth < 992 && document.getElementById("html").style.display == "block") {
-        document.getElementById("css").style.display = "none";
-        document.getElementById("js").style.display = "none";
-        document.getElementById("result").style.display = "none";
-    }
-}
-
-
-document.querySelectorAll("textarea").forEach(ele => {
-    ele.addEventListener("input", showPreview)
-})
